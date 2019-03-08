@@ -16,7 +16,7 @@ def read_input(path):
             with open(path+filename, "r") as f:
                 for line in f.readlines():
                         # split the line into words
-                        line=re.sub('([^\s\w]|_)+','',line).lower()
+                        line=re.sub('([^\s\w]|_)+',' ',line).lower()
                         yield line.split()
 
 def main(separator='\t'):
