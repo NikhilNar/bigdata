@@ -5,5 +5,5 @@
 # the relevant modules
 
 . /etc/profile.d/modules.sh
-module load python/gnu/2.7.11
+module load python/gnu/3.6.5
 src/reducer.py
