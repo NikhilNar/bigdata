@@ -3,7 +3,6 @@ from pyspark.ml.feature import CountVectorizer
 from pyspark.mllib.clustering import LDA, LDAModel
 from pyspark.mllib.linalg import Vector, Vectors
 from pyspark import SparkConf, SparkContext
-from pyspark.ml.feature import StopWordsRemover
 import io
 import zipfile
 
@@ -29,11 +28,7 @@ data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0][0].split(" ")))
 
 docDF = SQLContext(sc).createDataFrame(data)
-remover = StopWordsRemover(inputCol="words", outputCol="filtered")
-remover.transform(docDF).show(truncate=False)
-docDF = docDF.select("idd", "filtered").rdd.map(
-    lambda x: [x[0], x[1]]).cache()
-Vector = CountVectorizer(inputCol="filtered", outputCol="vectors")
+Vector = CountVectorizer(inputCol="words", outputCol="vectors")
 model = Vector.fit(docDF)
 result = model.transform(docDF)
 corpus = result.select("idd", "vectors").rdd.map(
