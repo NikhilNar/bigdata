@@ -29,9 +29,9 @@ data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0][0].split(" ")))
 
 docDF = SQLContext(sc).createDataFrame(data)
-remover = StopWordsRemover(inputCol="words", outputCol="words")
+remover = StopWordsRemover(inputCol="words", outputCol="filtered")
 remover.transform(docDF)
-Vector = CountVectorizer(inputCol="words", outputCol="vectors")
+Vector = CountVectorizer(inputCol="filtered", outputCol="vectors")
 model = Vector.fit(docDF)
 result = model.transform(docDF)
 corpus = result.select("idd", "vectors").rdd.map(
