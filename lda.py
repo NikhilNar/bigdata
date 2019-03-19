@@ -21,7 +21,7 @@ conf = SparkConf().setAppName("lda")
 sc = SparkContext(conf=conf)
 zips = sc.binaryFiles(path, 100)
 zipData = sc.parallelize(zips.map(zip_extract).collect(), 100)
-print("zipData====================", zipData[0])
+logging.info("zipData====================", zipData.collect())
 data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0].split(" ")))
 
