@@ -26,7 +26,7 @@ zipData = zips.map(zip_extract)
 #zipData = sc.parallelize(zipList)
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
-    idd=words[1], words=words[0][0].encode("ascii").split(" ")))
+    idd=words[1], words=words[0][0].split(" ")))
 
 docDF = SQLContext(sc).createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
@@ -39,7 +39,7 @@ corpus = result.select("idd", "vectors").rdd.map(
 # Cluster the documents into three topics using LDA
 ldaModel = LDA.train(corpus, k=3, maxIterations=100, optimizer='online')
 topics = ldaModel.topicsMatrix()
-vocabArray = model.vocabulary
+vocabArray = model.vocabulary.map(lambda x: x.encode("ascii"))
 
 
 wordNumbers = 50  # number of words per topic
