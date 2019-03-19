@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "C:\\Users\\NIKHIL\\Miniconda3\\python.exe",
+    "python.autoComplete.extraPaths": [
+        "${env:SPARK_HOME}\\python",
+        "${env:SPARK_HOME}\\python\\pyspark"
+    ]
+}

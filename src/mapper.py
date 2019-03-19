@@ -7,12 +7,13 @@ import os
 import io
 
 
+
 def read_input(file):
     for line in file:
         # split the line into words
         line = re.sub('([^\s\w]|_)+', '', line).lower()
         yield line.split()
-
+        
 
 # def read_input(path):
 #     print("path=", path)
