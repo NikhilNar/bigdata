@@ -15,7 +15,7 @@ def zip_extract(x):
     in_memory_data = io.BytesIO(x[1])
     file_obj = zipfile.ZipFile(in_memory_data, "r")
     files = [i for i in file_obj.namelist()]
-    return [file_obj.open(file).read() for file in files]
+    return [file_obj.open(file).read().split(" ") for file in files]
 
 
 conf = SparkConf().setAppName("lda")
@@ -24,7 +24,7 @@ zips = sc.binaryFiles(path, 100)
 zipData = sc.parallelize(zips.map(zip_extract).collect())
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
-    idd=words[1], words=words[0].split(" ")))
+    idd=words[1], words=words[0]))
 
 logging.info("------------------------data read successfully--------------------------------------------------------------------")
 
