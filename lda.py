@@ -22,10 +22,9 @@ conf = SparkConf().setAppName("lda")
 sc = SparkContext(conf=conf)
 zips = sc.binaryFiles(path, 100)
 
-zipList = zips.map(zip_extract)
-print("zipList==================================", zipList)
+zipData = zips.map(zip_extract)
 
-zipData = sc.parallelize(zipList)
+#zipData = sc.parallelize(zipList)
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0].split(" ")))
