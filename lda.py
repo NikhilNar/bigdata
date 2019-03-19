@@ -27,7 +27,7 @@ data = zipData.zipWithIndex().map(lambda words: Row(
 
 logging.info("------------------------data read successfully--------------------------------------------------------------------")
 
-docDF = sc.createDataFrame(data)
+docDF = SQLContext().createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
 model = Vector.fit(docDF)
 result = model.transform(docDF)
