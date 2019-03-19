@@ -54,6 +54,8 @@ def topic_render(topic):  # specify vector id of words to actual words
     terms = topic[0]
     result = []
     for i in range(wordNumbers):
+        if(i >= len(terms)):
+            return result
         term = vocabArray[terms[i]]
         result.append(term)
     return result
