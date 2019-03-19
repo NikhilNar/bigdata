@@ -6,8 +6,12 @@ from pyspark import SparkConf, SparkContext
 import io
 import zipfile
 
-
 path = "/user/ncn251/cookbook_text1.zip"
+
+# I have referenced the below three topics for implementing the assignment
+# https://spark.apache.org/docs/2.2.0/mllib-clustering.html#latent-dirichlet-allocation-lda
+# https://stackoverflow.com/questions/42051184/latent-dirichlet-allocation-lda-in-spark
+# https://stackoverflow.com/questions/28569788/how-to-open-stream-zip-files-through-spark
 
 
 def zip_extract(x):
@@ -23,7 +27,6 @@ zips = sc.binaryFiles(path, 100)
 
 zipData = zips.map(zip_extract)
 
-#zipData = sc.parallelize(zipList)
 data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0][0].split(" ")))
 
@@ -60,6 +63,4 @@ topics_final = topicIndices.map(lambda topic: topic_render(topic)).collect()
 for topic in range(len(topics_final)):
     print("Topic" + str(topic) + ":")
     print(topics_final[topic])
-#     for term in topics_final[topic]:
-#         print (term)
     print('\n')
