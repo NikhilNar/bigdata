@@ -37,7 +37,7 @@ model = Vector.fit(docDF)
 result = model.transform(docDF)
 print("result===================", result.select("vectors").collect())
 corpus = result.select("idd", "vectors").rdd.map(
-    lambda x: [x[0], Vectors.fromML(x[1])]).cache()
+    lambda x: [x[0], x[1]]).cache()
 
 # Cluster the documents into three topics using LDA
 ldaModel = LDA.train(corpus, k=3, maxIterations=100, optimizer='online')
