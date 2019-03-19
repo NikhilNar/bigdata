@@ -25,7 +25,7 @@ zipData = sc.parallelize(zips.map(zip_extract).collect(), 100)
 data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0].split(" ")))
 
-logging.info("data =" + data)
+logging.info("data read successfully")
 
 docDF = spark.createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
