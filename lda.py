@@ -29,7 +29,7 @@ data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0][0].split(" ")))
 
 docDF = SQLContext(sc).createDataFrame(data)
-remover = StopWordsRemover(inputCol="words", outputCol="filtered")
+remover = StopWordsRemover(inputCol="words", outputCol="words")
 remover.transform(docDF)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
 model = Vector.fit(docDF)
