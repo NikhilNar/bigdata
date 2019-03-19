@@ -8,12 +8,10 @@ import zipfile
 import logging
 
 path = "/user/ncn251/cookbook_text1.zip"
-totalCalls = 0
 
 
 def zip_extract(x):
-    totalCalls += 1
-    print("zip extract called==============================", totalCalls)
+    print("zip extract called==============================")
     in_memory_data = io.BytesIO(x[1])
     file_obj = zipfile.ZipFile(in_memory_data, "r")
     files = [i for i in file_obj.namelist()]
