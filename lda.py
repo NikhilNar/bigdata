@@ -5,13 +5,12 @@ from pyspark.mllib.linalg import Vector, Vectors
 from pyspark import SparkConf, SparkContext
 import io
 import zipfile
-import logging
+
 
 path = "/user/ncn251/cookbook_text1.zip"
 
 
 def zip_extract(x):
-    print("zip extract called==============================")
     in_memory_data = io.BytesIO(x[1])
     file_obj = zipfile.ZipFile(in_memory_data, "r")
     files = [i for i in file_obj.namelist()]
@@ -27,9 +26,7 @@ zipData = zips.map(zip_extract)
 #zipData = sc.parallelize(zipList)
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
-    idd=words[1], words=words[0][0].split(" ")))
-
-logging.info("------------------------data read successfully--------------------------------------------------------------------")
+    idd=words[1], words=words[0][0].encode("ascii").split(" ")))
 
 docDF = SQLContext(sc).createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
