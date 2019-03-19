@@ -30,7 +30,7 @@ data = zipData.zipWithIndex().map(lambda words: Row(
 
 docDF = SQLContext(sc).createDataFrame(data)
 remover = StopWordsRemover(inputCol="words", outputCol="filtered")
-remover.transform(docDF)
+remover.transform(docDF).show(truncate=False)
 docDF = docDF.select("idd", "filtered").rdd.map(
     lambda x: [x[0], x[1]]).cache()
 Vector = CountVectorizer(inputCol="filtered", outputCol="vectors")
