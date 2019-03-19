@@ -25,9 +25,9 @@ zipData = sc.parallelize(zips.map(zip_extract).collect(), 100)
 data = zipData.zipWithIndex().map(lambda words: Row(
     idd=words[1], words=words[0].split(" ")))
 
-logging.info("data read successfully")
+logging.info("------------------------data read successfully--------------------------------------------------------------------")
 
-docDF = SQLContext.createDataFrame(data)
+docDF = sc.createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
 model = Vector.fit(docDF)
 result = model.transform(docDF)
