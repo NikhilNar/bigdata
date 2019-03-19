@@ -21,6 +21,8 @@ def zip_extract(x):
 conf = SparkConf().setAppName("lda")
 sc = SparkContext(conf=conf)
 zips = sc.binaryFiles(path, 100)
+print("zips length=========================", len(zips))
+print("zips==================================", zips)
 zipData = sc.parallelize(zips.map(zip_extract).collect())
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
