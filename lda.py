@@ -35,7 +35,7 @@ docDF = SQLContext(sc).createDataFrame(data)
 Vector = CountVectorizer(inputCol="words", outputCol="vectors")
 model = Vector.fit(docDF)
 result = model.transform(docDF)
-
+print("result===================", result)
 corpus = result.select("idd", "vectors").rdd.map(
     lambda x: [x[0], Vectors.fromML(x[1])]).cache()
 
