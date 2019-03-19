@@ -39,6 +39,7 @@ ldaModel = LDA.train(corpus, k=3, maxIterations=100, optimizer='online')
 topics = ldaModel.topicsMatrix()
 vocabArray = model.vocabulary
 print("vocabArray============", vocabArray)
+vocabArray = [s.encode("ascii") for s in vocabArray]
 
 wordNumbers = 50  # number of words per topic
 topicIndices = sc.parallelize(
