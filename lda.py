@@ -45,7 +45,7 @@ topics = ldaModel.topicsMatrix()
 vocabArray = model.vocabulary
 
 
-wordNumbers = 10  # number of words per topic
+wordNumbers = 50  # number of words per topic
 topicIndices = sc.parallelize(
     ldaModel.describeTopics(maxTermsPerTopic=wordNumbers))
 
