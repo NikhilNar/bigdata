@@ -1,89 +1,65 @@
-from collections import defaultdict
-from pyspark import SparkContext, SparkConf
-from pyspark.mllib.linalg import Vector, Vectors
+from pyspark.sql import SQLContext, Row
+from pyspark.ml.feature import CountVectorizer
 from pyspark.mllib.clustering import LDA, LDAModel
-from pyspark.sql import SQLContext
-import re
+from pyspark.mllib.linalg import Vector, Vectors
+from pyspark import SparkConf, SparkContext
+import io
+import zipfile
+import logging
 
-# Number of most common words to remove, trying to eliminate stop words
-num_of_stop_words = 50
-num_topics = 3              # Number of topics we are looking for
-num_words_per_topic = 10    # Number of words to display for each topic
-max_iterations = 35         # Max number of times to iterate before finishing
+path = "/user/ncn251/cookbook_text1.zip"
 
-# Initialize
-conf = SparkConf().setAppName("building a warehouse")
+
+def zip_extract(x):
+    in_memory_data = io.BytesIO(x[1])
+    file_obj = zipfile.ZipFile(in_memory_data, "r")
+    files = [i for i in file_obj.namelist()]
+    return [file_obj.open(file).read() for file in files]
+
+
+conf = SparkConf().setAppName("lda")
 sc = SparkContext(conf=conf)
-sqlContext = SQLContext(sc)
-data = sc.wholeTextFiles('/user/ncn251/cookbook_text/*')
+zips = sc.binaryFiles(path, 100)
+zipData = sc.parallelize(zips.map(zip_extract).collect(), 100)
 
-tokens = data \
-    .map(lambda document: document.strip().lower()) \
-    .map(lambda document: re.split("[\s;,#]", document)) \
-    .map(lambda word: [x for x in word if x.isalpha()]) \
-    .map(lambda word: [x for x in word if len(x) > 3])
+data = zipData.zipWithIndex().map(lambda words: Row(
+    idd=words[1], words=words[0].split(" ")))
 
-# Get our vocabulary
-# 1. Flat map the tokens -> Put all the words in one giant list instead of a list per document
-# 2. Map each word to a tuple containing the word, and the number 1, signifying a count of 1 for that word
-# 3. Reduce the tuples by key, i.e.: Merge all the tuples together by the word, summing up the counts
-# 4. Reverse the tuple so that the count is first...
-# 5. ...which will allow us to sort by the word count
+logging.info("data read successfully")
 
-termCounts = tokens \
-    .flatMap(lambda document: document) \
-    .map(lambda word: (word, 1)) \
-    .reduceByKey(lambda x, y: x + y) \
-    .map(lambda tuple: (tuple[1], tuple[0])) \
-    .sortByKey(False)
+docDF = spark.createDataFrame(data)
+Vector = CountVectorizer(inputCol="words", outputCol="vectors")
+model = Vector.fit(docDF)
+result = model.transform(docDF)
 
-# Identify a threshold to remove the top words, in an effort to remove stop words
-threshold_value = termCounts.take(num_of_stop_words)[num_of_stop_words - 1][0]
+corpus = result.select("idd", "vectors").rdd.map(
+    lambda x: [x[0], Vectors.fromML(x[1])]).cache()
 
-# Only keep words with a count less than the threshold identified above,
-# and then index each one and collect them into a map
-vocabulary = termCounts \
-    .filter(lambda x: x[0] < threshold_value) \
-    .map(lambda x: x[1]) \
-    .zipWithIndex() \
-    .collectAsMap()
-
-# Convert the given document into a vector of word counts
+# Cluster the documents into three topics using LDA
+ldaModel = LDA.train(corpus, k=3, maxIterations=100, optimizer='online')
+topics = ldaModel.topicsMatrix()
+vocabArray = model.vocabulary
 
 
-def document_vector(document):
-    id = document[1]
-    counts = defaultdict(int)
-    for token in document[0]:
-        if token in vocabulary:
-            token_id = vocabulary[token]
-            counts[token_id] += 1
-    counts = sorted(counts.items())
-    keys = [x[0] for x in counts]
-    values = [x[1] for x in counts]
-    return (id, Vectors.sparse(len(vocabulary), keys, values))
+wordNumbers = 100  # number of words per topic
+topicIndices = sc.parallelize(
+    ldaModel.describeTopics(maxTermsPerTopic=wordNumbers))
 
 
-# Process all of the documents into word vectors using the
-# `document_vector` function defined previously
-documents = tokens.zipWithIndex().map(document_vector).map(list)
+def topic_render(topic):  # specify vector id of words to actual words
+    terms = topic[0]
+    result = []
+    for i in range(wordNumbers):
+        term = vocabArray[terms[i]]
+        result.append(term)
+    return result
 
-# Get an inverted vocabulary, so we can look up the word by it's index value
-inv_voc = {value: key for (key, value) in vocabulary.items()}
 
-# Open an output file
-with open("output.txt", 'w') as f:
-    lda_model = LDA.train(documents, k=num_topics,
-                          maxIterations=max_iterations)
-    topic_indices = lda_model.describeTopics(
-        maxTermsPerTopic=num_words_per_topic)
+topics_final = topicIndices.map(lambda topic: topic_render(topic)).collect()
 
-    # Print topics, showing the top-weighted 10 terms for each topic
-    for i in range(len(topic_indices)):
-        f.write("Topic #{0}\n".format(i + 1))
-        for j in range(len(topic_indices[i][0])):
-            f.write("{0}\t{1}\n".format(inv_voc[topic_indices[i][0][j]]
-                                        .encode('utf-8'), topic_indices[i][1][j]))
-
-    f.write("{0} topics distributed over {1} documents and {2} unique words\n"
-            .format(num_topics, documents.count(), len(vocabulary)))
+for topic in range(len(topics_final)):
+    print("Topic" + str(topic) + ":")
+    print(topics_final[topic])
+#     for term in topics_final[topic]:
+#         print (term)
+    print('\n')
