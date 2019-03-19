@@ -27,7 +27,7 @@ zipData = zips.map(zip_extract)
 #zipData = sc.parallelize(zipList)
 print("zipData====================", zipData.count())
 data = zipData.zipWithIndex().map(lambda words: Row(
-    idd=words[1], words=words[0].split(" ")))
+    idd=words[1], words=words[0][0].split(" ")))
 
 logging.info("------------------------data read successfully--------------------------------------------------------------------")
 
