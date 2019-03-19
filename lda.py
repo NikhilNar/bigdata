@@ -39,7 +39,7 @@ corpus = result.select("idd", "vectors").rdd.map(
 # Cluster the documents into three topics using LDA
 ldaModel = LDA.train(corpus, k=3, maxIterations=100, optimizer='online')
 topics = ldaModel.topicsMatrix()
-vocabArray = model.vocabulary.map(lambda x: x.encode("ascii"))
+vocabArray = model.vocabulary
 
 
 wordNumbers = 50  # number of words per topic
